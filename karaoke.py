@@ -5,6 +5,7 @@
 from xml.sax import make_parser
 import smallsmilhandler as ssh
 from sys import argv
+import os
 
 
 class openSMIL(ssh.SmallSMILHandler):
@@ -25,7 +26,29 @@ class openSMIL(ssh.SmallSMILHandler):
             def ready si esta bien, run, si no exit
             """
             self.Ready = True
+            self.download = "wget -q "
             super(openSMIL, self).__init__()
+
+    def _get_src(self):
+        listSMIL = self.get_tags()
+        for tags in listSMIL:
+            for i in range(len(tags[1])):
+                if tags[1][i].lower() == 'src':
+                    try:
+                        srcLocal = tags[2][i].rsplit('/', 1)[1]
+                    except IndexError:
+                        srcLocal = tags[2][i]
+                    if os.path.exists(srcLocal):
+                        tags[2][i] = srcLocal
+                    else:
+                        print 'Downloading... ' + srcLocal,
+                        succ = os.system(self.download + tags[2][i])
+                        if succ == 0:
+                            print ':) ok'
+                            tags[2][i] = srcLocal
+                        else:
+                            print ':( No exsist.'
+        return listSMIL
 
     def _orderList(self, listSMIL):
         """
@@ -53,7 +76,7 @@ class openSMIL(ssh.SmallSMILHandler):
                 self.Ready = False
                 print 'Waring: Error contenido en <' + self.ofile.name + '>'
             else:
-                self.newlist = self._orderList(self.get_tags())
+                self.newlist = self._orderList(self._get_src())
 
     def printLists(self):
         """
