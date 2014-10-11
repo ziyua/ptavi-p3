@@ -29,39 +29,41 @@ class openSMIL(ssh.SmallSMILHandler):
             self.download = "wget -q "
             super(openSMIL, self).__init__()
 
-    def _get_src(self):
-        listSMIL = self.get_tags()
-        for tags in listSMIL:
-            for i in range(len(tags[1])):
-                if tags[1][i].lower() == 'src':
-                    try:
-                        srcLocal = tags[2][i].rsplit('/', 1)[1]
-                    except IndexError:
-                        srcLocal = tags[2][i]
-                    if os.path.exists(srcLocal):
-                        tags[2][i] = srcLocal
-                    else:
-                        print 'Downloading... ' + srcLocal,
-                        succ = os.system(self.download + tags[2][i])
-                        if succ == 0:
-                            print ':) ok'
+    def get_tags_local(self):
+        if self.Ready:
+            listSMIL = self.get_tags()
+            for tags in listSMIL:
+                for i in range(len(tags[1])):
+                    if tags[1][i].lower() == 'src':
+                        try:
+                            srcLocal = tags[2][i].rsplit('/', 1)[1]
+                        except IndexError:
+                            srcLocal = tags[2][i]
+                        if os.path.exists(srcLocal):
                             tags[2][i] = srcLocal
                         else:
-                            print ':( No exsist.'
-        return listSMIL
+                            succ = os.system(self.download + tags[2][i])
+                            if succ == 0:
+                                tags[2][i] = srcLocal
+            return listSMIL
+        else:
+            return None
 
-    def _orderList(self, listSMIL):
+    def orderList(self, listSMIL):
         """
         genera:
         root-layout\twidth= "248"\theight="300"\tbackground-color="blue"\n
         """
-        newlist = []
-        for tags in listSMIL:
-            string = tags[0]
-            for i in range(len(tags[1])):
-                string += '\\t' + tags[1][i] + '=' + '\"' + tags[2][i] + '\"'
-            newlist.append(string + '\\n')
-        return newlist
+        if self.Ready:
+            newlist = []
+            for tags in listSMIL:
+                string = tags[0]
+                for i in range(len(tags[1])):
+                    string += '\\t' + tags[1][i] + '=' + '"' + tags[2][i] + '"'
+                newlist.append(string + '\\n')
+            return newlist
+        else:
+            return None
 
     def readNow(self):
         """
@@ -75,22 +77,37 @@ class openSMIL(ssh.SmallSMILHandler):
             except:
                 self.Ready = False
                 print 'Waring: Error contenido en <' + self.ofile.name + '>'
-            else:
-                self.newlist = self._orderList(self._get_src())
 
-    def printLists(self):
+    def printLists(self, newlist):
         """
         print list SMIL
         """
         if self.Ready:
-            for tags in self.newlist:
+            for tags in newlist:
                 print tags
 
 
+class KaraokeLocal(openSMIL):
+
+    def __init__(self):
+        super(KaraokeLocal, self).__init__()
+        self.readNow()
+        self.printLists(self.orderList(self.get_tags()))
+
+    def __str__(self):
+        self.printLists(self.orderList(self.get_tags()))
+
+    def do_local(self):
+        self.printLists(self.orderList(self.get_tags_local()))
+
+
 def main():
-    RSMIL = openSMIL()
-    RSMIL.readNow()
-    RSMIL.printLists()
+    os.system('clear')
+    KL = KaraokeLocal()
+    print '++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++'
+    KL.__str__()
+    print '++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++'
+    KL.do_local()
 
 if __name__ == '__main__':
     main()
