@@ -7,35 +7,37 @@ import sys
 import os
 
 
-class KaraokeLocal(ssh.SmallSMILHandler):
+class KaraokeLocal():
 
-    def __init__(self, fichero):
+    def __init__(self, filename):
         parser = make_parser()
         SSMILH = ssh.SmallSMILHandler()
         parser.setContentHandler(SSMILH)
-        parser.parse(open(fichero))
+        parser.parse(open(filename))
         self.list = SSMILH.get_tags()
 
     def do_local(self):
-        for tagsDict in self.list:
-            if 'src' in tagsDict and tagsDict['src'][:6] == "http://":
-                os.system("wget -q " + tagsDict['src'])
-                tagsDict['src'] = tagsDict['src'].split('/')[-1]
+        for dic in self.list:
+            if 'src' in dic and dic['src'][:7] == "http://":
+                nameLocal = dic['src'].rsplit('/', 1)[1]
+                if not os.path.exists(nameLocal):
+                    os.system("wget -q " + dic['src'])
+                dic['src'] = nameLocal
 
     def __str__(self):
-        returnString = ""
-        for diccionario in self.list:
-            returnString += diccionario['name']
-            for valor in diccionario:
-                if valor != "name":
-                    returnString += '\t' + valor + "=" + diccionario[valor]
-            returnString += "\n"
-        return returnString
+        returnStr = ""
+        for dic in self.list:
+            returnStr += dic['name']
+            for key in dic:
+                if key != "name":
+                    returnStr += '\t' + key + '="' + dic[key] + '"'
+            returnStr += "\n"
+        return returnStr
 
 
 if __name__ == '__main__':
     if len(sys.argv) != 2:
-        sys.exit("Usage:")
+        sys.exit("Usage: python karaoke.py file.smil")
 
     k = KaraokeLocal(sys.argv[1])
     print k
