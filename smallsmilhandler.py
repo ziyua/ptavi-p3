@@ -56,7 +56,7 @@ class SmallSMILHandler(ContentHandler, object):
 
     def startElement(self, name, attrs):
         """
-        1. 'self._smil' es list total; (private important!!)
+        1. 'self._smil' es list total;
         eval() name como "self.root_layout" --> list: self.root_layout = []
         clean sub-list, than anade element.
         """
