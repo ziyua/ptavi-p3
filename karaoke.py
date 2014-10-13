@@ -95,7 +95,7 @@ class KaraokeLocal(openSMIL):
         self.printLists(self.orderList(self.get_tags()))
 
     def __str__(self):
-        self.printLists(self.orderList(self.get_tags()))
+        return u"\n".join(self.orderList(self.get_tags()))
 
     def do_local(self):
         self.printLists(self.orderList(self.get_tags_local()))
@@ -105,7 +105,7 @@ def main():
     os.system('clear')
     KL = KaraokeLocal()
     print '++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++'
-    KL.__str__()
+    print KL.__str__()
     print '++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++'
     KL.do_local()
 
